@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches PaperBase / InkBase in the Compose theme so the launch window
+         does not flash a different colour before the first frame. -->
+    <color name="window_background">#F4F7FC</color>
+    <color name="ic_launcher_background">#0D1526</color>
+</resources>

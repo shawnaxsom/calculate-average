@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The overbar of the mean symbol above three tally bars. Everything sits
+     inside the 72dp adaptive-icon safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#2DD4BF"
+        android:pathData="M30,30 H78 A3,3 0 0 1 81,33 A3,3 0 0 1 78,36 H30 A3,3 0 0 1 27,33 A3,3 0 0 1 30,30 Z" />
+    <path
+        android:fillColor="#2DD4BF"
+        android:pathData="M30,52 H38 A3,3 0 0 1 41,55 V77 A3,3 0 0 1 38,80 H30 A3,3 0 0 1 27,77 V55 A3,3 0 0 1 30,52 Z" />
+    <path
+        android:fillColor="#FBBF24"
+        android:pathData="M50,60 H58 A3,3 0 0 1 61,63 V77 A3,3 0 0 1 58,80 H50 A3,3 0 0 1 47,77 V63 A3,3 0 0 1 50,60 Z" />
+    <path
+        android:fillColor="#2DD4BF"
+        android:pathData="M70,44 H78 A3,3 0 0 1 81,47 V77 A3,3 0 0 1 78,80 H70 A3,3 0 0 1 67,77 V47 A3,3 0 0 1 70,44 Z" />
+</vector>
