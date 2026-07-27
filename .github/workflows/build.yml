@@ -6,6 +6,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,9 +31,29 @@ jobs:
       - name: Build debug APK
         run: ./gradlew assembleDebug --stacktrace
 
-      - name: Upload APK
+      - name: Name the APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk average-debug.apk
+
+      - name: Upload APK as a build artifact
         uses: actions/upload-artifact@v4
         with:
           name: average-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          path: average-debug.apk
           if-no-files-found: error
+
+      # Build artifacts are zipped and need a signed-in GitHub account to
+      # fetch. Republish the same APK as a rolling "latest" pre-release so the
+      # phone doing the sideloading can download the .apk directly.
+      - name: Publish to the latest release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag || true
+          gh release create latest average-debug.apk \
+            --target "$GITHUB_SHA" \
+            --title "Latest debug build" \
+            --notes "Debug APK built from $GITHUB_SHA on \`$GITHUB_REF_NAME\`.
+
+          Sideload it: download \`average-debug.apk\` on the phone and open it. Android will ask you to allow installs from your browser or files app the first time. It is debug-signed, so it will not upgrade over a Play Store copy." \
+            --prerelease
