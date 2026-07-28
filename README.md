@@ -4,6 +4,15 @@ An Android calculator that averages numbers as you type them. Enter a run of
 values and the count, sum, range and average update on every keystroke — no
 equals key, no operator to remember.
 
+## Average or sum
+
+The toggle at the top of the result card decides which figure gets the big
+readout. Whichever one is not on show is demoted to a stat tile, so both are
+always on screen.
+
+It is a display choice only. Digit entry is unaffected: the tape, the pending
+number and the digit mode all carry across when you flip it.
+
 ## How entry works
 
 The **DIGITS** selector under the tape decides how many keystrokes make up one

@@ -19,6 +19,15 @@ enum class EntryMode(val digits: Int, val label: String, val placeholder: String
 }
 
 /**
+ * Which total the main readout shows. This is purely a display choice — it has
+ * no bearing on how keystrokes are grouped into numbers.
+ */
+enum class ResultKind(val label: String) {
+    AVERAGE("Average"),
+    SUM("Sum"),
+}
+
+/**
  * Everything the calculator needs to render itself.
  *
  * @param inputEscaped set once the pending [input] has opted out of
@@ -30,6 +39,7 @@ data class CalculatorState(
     val input: String = "",
     val mode: EntryMode = EntryMode.ONE,
     val inputEscaped: Boolean = false,
+    val resultKind: ResultKind = ResultKind.AVERAGE,
 ) {
     val count: Int get() = numbers.size
 
@@ -44,6 +54,13 @@ data class CalculatorState(
     val min: BigDecimal? get() = numbers.minOrNull()
 
     val max: BigDecimal? get() = numbers.maxOrNull()
+
+    /** The headline figure — whichever of [average] or [sum] is on show. */
+    val result: BigDecimal?
+        get() = if (numbers.isEmpty()) null else when (resultKind) {
+            ResultKind.AVERAGE -> average
+            ResultKind.SUM -> sum
+        }
 
     val isEmpty: Boolean get() = numbers.isEmpty() && input.isEmpty()
 }

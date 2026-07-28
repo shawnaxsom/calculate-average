@@ -216,4 +216,57 @@ class CalculatorEngineTest {
         assertNull(state().average)
         assertEquals(BigDecimal.ZERO, state().sum)
     }
+
+    @Test
+    fun `result follows the selected kind`() {
+        val averaging = type(state(), "936")
+        assertEquals("6", NumberFormat.format(averaging.result!!))
+
+        val summing = CalculatorEngine.setResultKind(averaging, ResultKind.SUM)
+        assertEquals("18", NumberFormat.format(summing.result!!))
+    }
+
+    @Test
+    fun `toggling the result kind leaves entry untouched`() {
+        val start = type(state(EntryMode.TWO), "1234567")
+
+        val toggled = CalculatorEngine.setResultKind(start, ResultKind.SUM)
+
+        assertEquals(start.numbers, toggled.numbers)
+        assertEquals("7", toggled.input)
+        assertEquals(EntryMode.TWO, toggled.mode)
+        assertEquals(start.copy(resultKind = ResultKind.SUM), toggled)
+    }
+
+    @Test
+    fun `digits keep grouping the same way while summing`() {
+        val summing = CalculatorEngine.setResultKind(state(), ResultKind.SUM)
+
+        val result = type(summing, "936")
+        assertEquals(listOf("9", "3", "6"), numbers(result))
+        assertEquals("18", NumberFormat.format(result.result!!))
+    }
+
+    @Test
+    fun `sum keeps decimals`() {
+        val summing = CalculatorEngine.setResultKind(state(), ResultKind.SUM)
+
+        val result = type(summing, "1.25=0.5=")
+        assertEquals("1.75", NumberFormat.format(result.result!!))
+    }
+
+    @Test
+    fun `empty tape has no result in either mode`() {
+        assertNull(state().result)
+        assertNull(CalculatorEngine.setResultKind(state(), ResultKind.SUM).result)
+    }
+
+    @Test
+    fun `clearing keeps the selected result kind`() {
+        val summing = CalculatorEngine.setResultKind(type(state(), "936"), ResultKind.SUM)
+
+        val result = CalculatorEngine.clearAll(summing)
+        assertTrue(result.isEmpty)
+        assertEquals(ResultKind.SUM, result.resultKind)
+    }
 }

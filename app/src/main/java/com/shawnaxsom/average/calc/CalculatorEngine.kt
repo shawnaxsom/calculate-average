@@ -61,8 +61,16 @@ object CalculatorEngine {
         else -> state
     }
 
-    /** C key: wipes the tape but keeps the selected mode. */
-    fun clearAll(state: CalculatorState): CalculatorState = CalculatorState(mode = state.mode)
+    /** C key: wipes the tape but keeps the display settings. */
+    fun clearAll(state: CalculatorState): CalculatorState =
+        CalculatorState(mode = state.mode, resultKind = state.resultKind)
+
+    /**
+     * Switches the headline figure between the average and the sum. Entry is
+     * untouched: the tape, the pending input and the digit mode all stand.
+     */
+    fun setResultKind(state: CalculatorState, kind: ResultKind): CalculatorState =
+        state.copy(resultKind = kind)
 
     fun removeAt(state: CalculatorState, index: Int): CalculatorState {
         if (index !in state.numbers.indices) return state

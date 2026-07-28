@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,6 +37,7 @@ import com.shawnaxsom.average.CalculatorViewModel
 import com.shawnaxsom.average.calc.CalculatorState
 import com.shawnaxsom.average.calc.EntryMode
 import com.shawnaxsom.average.calc.NumberFormat
+import com.shawnaxsom.average.calc.ResultKind
 import com.shawnaxsom.average.ui.theme.AverageTheme
 import com.shawnaxsom.average.ui.theme.calculatorColors
 
@@ -53,6 +57,7 @@ fun AverageScreen(viewModel: CalculatorViewModel = viewModel()) {
         },
         onRemove = viewModel::onRemove,
         onModeChange = viewModel::onModeChange,
+        onResultKindChange = viewModel::onResultKindChange,
     )
 }
 
@@ -62,6 +67,7 @@ fun AverageScreen(
     onKey: (Key) -> Unit,
     onRemove: (Int) -> Unit,
     onModeChange: (EntryMode) -> Unit,
+    onResultKindChange: (ResultKind) -> Unit,
 ) {
     val colors = calculatorColors
     Box(
@@ -75,7 +81,11 @@ fun AverageScreen(
                 .windowInsetsPadding(WindowInsets.safeDrawing)
                 .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
-            ResultCard(state, modifier = Modifier.fillMaxWidth())
+            ResultCard(
+                state = state,
+                onResultKindChange = onResultKindChange,
+                modifier = Modifier.fillMaxWidth(),
+            )
             Spacer(Modifier.height(14.dp))
             Box(modifier = Modifier.weight(1f)) {
                 NumberTape(
@@ -98,9 +108,19 @@ fun AverageScreen(
 }
 
 @Composable
-private fun ResultCard(state: CalculatorState, modifier: Modifier = Modifier) {
+private fun ResultCard(
+    state: CalculatorState,
+    onResultKindChange: (ResultKind) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val colors = calculatorColors
-    val average = state.average
+    val result = state.result
+    // Whichever total is not on show gets demoted to a stat tile, so both are
+    // always visible and the toggle only decides which one is big.
+    val (secondaryLabel, secondaryValue) = when (state.resultKind) {
+        ResultKind.AVERAGE -> "SUM" to state.average?.let { NumberFormat.format(state.sum) }
+        ResultKind.SUM -> "AVERAGE" to state.average?.let { NumberFormat.format(it) }
+    }
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(28.dp),
@@ -111,23 +131,22 @@ private fun ResultCard(state: CalculatorState, modifier: Modifier = Modifier) {
             modifier = Modifier.padding(horizontal = 22.dp, vertical = 18.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
-                text = "AVERAGE",
-                style = MaterialTheme.typography.labelSmall,
-                color = colors.muted,
+            ResultToggle(
+                selected = state.resultKind,
+                onSelect = onResultKindChange,
             )
-            Spacer(Modifier.height(2.dp))
+            Spacer(Modifier.height(6.dp))
             AnimatedContent(
-                targetState = average?.let { NumberFormat.format(it) } ?: "—",
+                targetState = result?.let { NumberFormat.format(it) } ?: "—",
                 transitionSpec = {
                     fadeIn(tween(140)) togetherWith fadeOut(tween(140))
                 },
-                label = "average",
+                label = "result",
             ) { text ->
                 Text(
                     text = text,
                     style = MaterialTheme.typography.displayLarge,
-                    color = if (average == null) colors.muted else colors.accent,
+                    color = if (result == null) colors.muted else colors.accent,
                     maxLines = 1,
                     softWrap = false,
                     textAlign = TextAlign.Center,
@@ -140,7 +159,7 @@ private fun ResultCard(state: CalculatorState, modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 StatTile("COUNT", state.count.toString(), Modifier.weight(1f))
-                StatTile("SUM", NumberFormat.format(state.sum), Modifier.weight(1f))
+                StatTile(secondaryLabel, secondaryValue ?: "—", Modifier.weight(1f))
                 StatTile(
                     label = "RANGE",
                     value = state.min?.let { min ->
@@ -151,6 +170,31 @@ private fun ResultCard(state: CalculatorState, modifier: Modifier = Modifier) {
                     modifier = Modifier.weight(1f),
                 )
             }
+        }
+    }
+}
+
+/** Picks whether the headline figure is the average or the running total. */
+@Composable
+private fun ResultToggle(selected: ResultKind, onSelect: (ResultKind) -> Unit) {
+    val colors = calculatorColors
+    Row(
+        modifier = Modifier
+            .height(38.dp)
+            .clip(RoundedCornerShape(19.dp))
+            .background(colors.key.copy(alpha = 0.5f))
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        ResultKind.entries.forEach { option ->
+            Segment(
+                text = option.label,
+                selected = option == selected,
+                onClick = { onSelect(option) },
+                modifier = Modifier
+                    .width(96.dp)
+                    .fillMaxHeight(),
+            )
         }
     }
 }
@@ -196,6 +240,7 @@ private fun AverageScreenPreview() {
             onKey = {},
             onRemove = {},
             onModeChange = {},
+            onResultKindChange = {},
         )
     }
 }

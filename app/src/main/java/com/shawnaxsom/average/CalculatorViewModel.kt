@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.shawnaxsom.average.calc.CalculatorEngine
 import com.shawnaxsom.average.calc.CalculatorState
 import com.shawnaxsom.average.calc.EntryMode
+import com.shawnaxsom.average.calc.ResultKind
 
 /** Holds the tape across configuration changes and delegates every key to [CalculatorEngine]. */
 class CalculatorViewModel : ViewModel() {
@@ -29,6 +30,8 @@ class CalculatorViewModel : ViewModel() {
     fun onRemove(index: Int) = update { CalculatorEngine.removeAt(it, index) }
 
     fun onModeChange(mode: EntryMode) = update { CalculatorEngine.setMode(it, mode) }
+
+    fun onResultKindChange(kind: ResultKind) = update { CalculatorEngine.setResultKind(it, kind) }
 
     private fun update(transform: (CalculatorState) -> CalculatorState) {
         state = transform(state)
